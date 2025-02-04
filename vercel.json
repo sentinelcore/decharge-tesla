@@ -8,7 +8,7 @@
     ],
     "routes": [
       {
-        "src": "/api/tesla_auth",
+        "src": "api/tesla_auth",
         "dest": "api/tesla_auth.py"
       }
     ]
