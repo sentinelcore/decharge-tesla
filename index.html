@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Tesla Battery Level</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f5f5f5;
+    }
+    form {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px;
+      background: #0070f3;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #0059c1;
+    }
+    #result {
+      margin: 2rem auto;
+      max-width: 400px;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #333;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <form id="teslaForm">
+    <h1>Check Tesla Battery</h1>
+    <label for="email">Tesla Email:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="password">Tesla Password:</label>
+    <input type="password" id="password" name="password" required>
+
+    <label for="mfa_code">MFA Code (if enabled):</label>
+    <input type="text" id="mfa_code" name="mfa_code">
+
+    <button type="submit">Check Battery</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('teslaForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      resultDiv.textContent = 'Loading...';
+
+      // Gather inputs
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const mfaCode = document.getElementById('mfa_code').value;
+
+      try {
+        // Make POST request to serverless function
+        const response = await fetch('/api/tesla_auth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            mfa_code: mfaCode
+          })
+        });
+
+        if (!response.ok) {
+          // e.g. 401, 404, 500, etc.
+          const errData = await response.json();
+          throw new Error(errData.error || `HTTP Error ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.battery_level !== undefined) {
+          resultDiv.innerHTML = `
+            <p>Vehicle: <strong>${data.vehicle_name}</strong></p>
+            <p>Battery Level: <strong>${data.battery_level}%</strong></p>
+          `;
+        } else if (data.error) {
+          resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        } else {
+          resultDiv.innerHTML = `<p class="error">Unknown error occurred.</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p class="error">${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

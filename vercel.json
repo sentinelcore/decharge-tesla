@@ -1,0 +1,16 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "api/tesla_auth.py",
+        "use": "@vercel/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/tesla_auth",
+        "dest": "api/tesla_auth.py"
+      }
+    ]
+  }
+  
